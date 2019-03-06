@@ -56,135 +56,17 @@ rf_plot <- rf_plot %>%
 rf_long <- rf_plot %>%
   gather(mtry, value, X3:X9)
 
-p <- ggplot(rf_long, aes(x = ntree, y = value))
+
+p <- ggplot(rf_long, aes(x = ntree, y = value, col = mtry))
 p + geom_line() +
-  facet_wrap(~mtry)
+  labs(y = "Test Error") +
+  scale_color_brewer(palette="Paired")
 ```
 
 ![](homework-4_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
-``` r
-set.seed(200)
-trainControl <- trainControl(method = "cv", number = 5)
-rf_cv <- data.frame(ntree = rep(NA, length(20)),
-                    mtry_best = rep(NA, length(ntree)))
-for(i in 1:20){
-  rf_boston_cv <- train(medv ~ ., 
-                      data = training,
-                      method = "rf",
-                      ntree = ntree$ntree[i],
-                      importance = T, 
-                      tuneGrid = mtry) 
-  
-  rf_cv[i, "ntree"] <- ntree$ntree[i]
-  rf_cv[i, "mtry_best"] <- rf_boston_cv$finalModel$mtry
-}
-
-rf_cv
-```
-
-    ##    ntree mtry_best
-    ## 1     25         6
-    ## 2     50         5
-    ## 3     75         5
-    ## 4    100         5
-    ## 5    125         5
-    ## 6    150         6
-    ## 7    175         5
-    ## 8    200         5
-    ## 9    225         6
-    ## 10   250         6
-    ## 11   275         5
-    ## 12   300         5
-    ## 13   325         6
-    ## 14   350         5
-    ## 15   375         6
-    ## 16   400         5
-    ## 17   425         5
-    ## 18   450         6
-    ## 19   475         5
-    ## 20   500         4
-
-By checking the classes of `mtry_best`, we can tell that there are three candidates of best mtry should be evaluated by calculating the MSE of the random forest with each of them.
-
-``` r
-best_rf_pairs <- tbl_df(rf_cv)
-best_rf_pairs
-```
-
-    ## # A tibble: 20 x 2
-    ##    ntree mtry_best
-    ##  * <dbl>     <dbl>
-    ##  1    25         6
-    ##  2    50         5
-    ##  3    75         5
-    ##  4   100         5
-    ##  5   125         5
-    ##  6   150         6
-    ##  7   175         5
-    ##  8   200         5
-    ##  9   225         6
-    ## 10   250         6
-    ## 11   275         5
-    ## 12   300         5
-    ## 13   325         6
-    ## 14   350         5
-    ## 15   375         6
-    ## 16   400         5
-    ## 17   425         5
-    ## 18   450         6
-    ## 19   475         5
-    ## 20   500         4
-
-``` r
-unique(best_rf_pairs$mtry_best) 
-```
-
-    ## [1] 6 5 4
-
-``` r
-mtry_num = 3
-ntree_num = 20
-
-output_2 <- matrix(ncol = mtry_num, nrow = ntree_num)
-rownames(output_2) <- seq(25, 500, 25)
-colnames(output_2) <- c(4,5,6)
-```
-
-``` r
-ntree <- data.frame(ntree = (seq(25, 500, 25)))
-best_mtry <- data.frame(best_mtry = c(4,5,6))
-
-for (i in 1:mtry_num) {
-  for(n in 1:ntree_num){
-      best_rf_boston <- randomForest(medv ~ .,
-                            data = training,  # create loop to change ntree value
-                            mtry = best_mtry$best_mtry[i],
-                            ntree = ntree$ntree[n])
-      
-      test_preds_2 <- predict(best_rf_boston, newdata = testing)
-      best_boston_test_df <- testing %>%
-        mutate(y_hat_rf = test_preds_2,
-               sq_err_rf = (y_hat_rf - medv)^2)
-      output_2[n,i] <- mean(best_boston_test_df$sq_err_rf)
-  }
-}
-
-best_rf_plot <- data.frame(output_2)
-best_rf_plot <- best_rf_plot %>%
-  mutate(ntree = seq(25,500,25))
-```
-
-``` r
-best_rf_long <- best_rf_plot %>%
-  gather(best_mtry, value, X4:X6)
-
-p <- ggplot(best_rf_long, aes(x = ntree, y = value))
-p + geom_line() +
-  facet_wrap(~best_mtry)
-```
-
-![](homework-4_files/figure-markdown_github/unnamed-chunk-9-1.png) According to the plots shown above, we can tell that the random forest model with `mtry = 5` and `ntree = 75` generates the smallest MSE with the testing dataset. \#\# Problem 2
+Problem 2
+---------
 
 Problem 8 from Chapter 8 in the text. Set your seed with 9823 and split into train/test using 50% of your data in each split. In addition to parts (a) - (e), do the following:
 
@@ -211,7 +93,7 @@ reg_tree <- rpart(Sales ~ ., training)
 plot(as.party(reg_tree))
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-12-1.png)
+![](homework-4_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 ``` r
 reg_tree
@@ -274,7 +156,7 @@ cv_reg_tree <- train(Sales ~ .,
 plot(cv_reg_tree)
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-14-1.png)
+![](homework-4_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
 ``` r
 cv_reg_tree
@@ -302,7 +184,7 @@ cv_reg_tree
 plot(as.party(cv_reg_tree$finalModel))
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-14-2.png) Estimated Test MSE:
+![](homework-4_files/figure-markdown_github/unnamed-chunk-9-2.png) Estimated Test MSE:
 
 ``` r
 test_preds <- predict(cv_reg_tree, newdata = testing)
@@ -347,7 +229,7 @@ bag_car
 varImpPlot(bag_car)  
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-16-1.png) By reading the output of `varImpPlot`, we can tell that the most important predictors are `ShelveLoc` and `Price`.
+![](homework-4_files/figure-markdown_github/unnamed-chunk-11-1.png) By reading the output of `varImpPlot`, we can tell that the most important predictors are `ShelveLoc` and `Price`.
 
 Estimated Test MSE:
 
@@ -405,7 +287,7 @@ rf_car_cv
 plot(rf_car_cv)
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-18-1.png) Estimated Test MSE:
+![](homework-4_files/figure-markdown_github/unnamed-chunk-13-1.png) Estimated Test MSE:
 
 ``` r
 test_preds <- predict(rf_car_cv, newdata = testing)
@@ -423,7 +305,7 @@ By comparing the RMSE of bagging and random forest applied on testing dataset, w
 varImpPlot(rf_car_cv$finalModel)
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-20-1.png) According to the variable importance plot of the optimal random forest shown above, we can tell that `ShelveLocGood` and `Price` are the most importance predictors.
+![](homework-4_files/figure-markdown_github/unnamed-chunk-15-1.png) According to the variable importance plot of the optimal random forest shown above, we can tell that `ShelveLocGood` and `Price` are the most importance predictors.
 
 ``` r
 rf_car_cv$finalModel
@@ -569,7 +451,7 @@ gbm_car
 plot(gbm_car)
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-22-1.png) Estimated Test MSE:
+![](homework-4_files/figure-markdown_github/unnamed-chunk-17-1.png) Estimated Test MSE:
 
 ``` r
 test_preds <- predict(gbm_car, newdata = testing)
