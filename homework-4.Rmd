@@ -35,44 +35,43 @@ Problem 7 from Chapter 8 in the text. To be specific, please use a sequence of
 ```{r}
 set.seed(100)
 df <- tbl_df(Boston)
-inTraining <- createDataPartition(df$medv, p = .75, list = F)
-training <- df[inTraining, ]
-testing  <- df[-inTraining, ]
-```
 
-```{r}
 mtry_i = 7
 ntree_n = 20
 
 output <- matrix(ncol = mtry_i, nrow = ntree_n)
 rownames(output) <- seq(25, 500, 25)
 colnames(output) <- seq(3,9,1)
-```
 
-```{r}
-ntree <- data.frame(ntree = (seq(25, 500, 25)))
-mtry <- data.frame(mtry = seq(3,9,1))
-
-for (i in 1:mtry_i) {
-  for(n in 1:ntree_n){
+for (k in 1:20){
+  inTraining <- createDataPartition(df$medv, p = .75, list = F)
+  training <- df[inTraining, ]
+  testing  <- df[-inTraining, ]
+  mtry <- c(3:9)
+  ntree <- seq(25, 500, len = 20)
+  
+  for (i in 1:mtry_i) {
+    cat(sprintf('Trial: %s, mtry: %s --- %s\n', k, mtry[i], Sys.time()))
+    for(n in 1:ntree_n){
       rf_boston <- randomForest(medv ~ .,
                             data = training,  # create loop to change ntree value
-                            mtry = mtry$mtry[i],
-                            ntree = ntree$ntree[n])
+                            mtry = mtry[i],
+                            ntree = ntree[n])
       
       test_preds <- predict(rf_boston, newdata = testing)
       boston_test_df <- testing %>%
         mutate(y_hat_rf = test_preds,
                sq_err_rf = (y_hat_rf - medv)^2)
       output[n,i] <- mean(boston_test_df$sq_err_rf)
+    }
   }
 }
-
+```
+```{r}
 rf_plot <- data.frame(output)
 rf_plot <- rf_plot %>%
   mutate(ntree = seq(25,500,25))
 ```
-
 
 ```{r}
 rf_long <- rf_plot %>%
@@ -84,6 +83,7 @@ p + geom_line() +
   labs(y = "Test Error") +
   scale_color_brewer(palette="Paired")
 ```
+
 
 ## Problem 2
 

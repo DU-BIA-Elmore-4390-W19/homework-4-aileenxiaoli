@@ -14,39 +14,181 @@ Answer 1
 ``` r
 set.seed(100)
 df <- tbl_df(Boston)
-inTraining <- createDataPartition(df$medv, p = .75, list = F)
-training <- df[inTraining, ]
-testing  <- df[-inTraining, ]
-```
 
-``` r
 mtry_i = 7
 ntree_n = 20
 
 output <- matrix(ncol = mtry_i, nrow = ntree_n)
 rownames(output) <- seq(25, 500, 25)
 colnames(output) <- seq(3,9,1)
-```
 
-``` r
-ntree <- data.frame(ntree = (seq(25, 500, 25)))
-mtry <- data.frame(mtry = seq(3,9,1))
-
-for (i in 1:mtry_i) {
-  for(n in 1:ntree_n){
+for (k in 1:20){
+  inTraining <- createDataPartition(df$medv, p = .75, list = F)
+  training <- df[inTraining, ]
+  testing  <- df[-inTraining, ]
+  mtry <- c(3:9)
+  ntree <- seq(25, 500, len = 20)
+  
+  for (i in 1:mtry_i) {
+    cat(sprintf('Trial: %s, mtry: %s --- %s\n', k, mtry[i], Sys.time()))
+    for(n in 1:ntree_n){
       rf_boston <- randomForest(medv ~ .,
                             data = training,  # create loop to change ntree value
-                            mtry = mtry$mtry[i],
-                            ntree = ntree$ntree[n])
+                            mtry = mtry[i],
+                            ntree = ntree[n])
       
       test_preds <- predict(rf_boston, newdata = testing)
       boston_test_df <- testing %>%
         mutate(y_hat_rf = test_preds,
                sq_err_rf = (y_hat_rf - medv)^2)
       output[n,i] <- mean(boston_test_df$sq_err_rf)
+    }
   }
 }
+```
 
+    ## Trial: 1, mtry: 3 --- 2019-03-09 21:52:26
+    ## Trial: 1, mtry: 4 --- 2019-03-09 21:52:31
+    ## Trial: 1, mtry: 5 --- 2019-03-09 21:52:37
+    ## Trial: 1, mtry: 6 --- 2019-03-09 21:52:43
+    ## Trial: 1, mtry: 7 --- 2019-03-09 21:52:51
+    ## Trial: 1, mtry: 8 --- 2019-03-09 21:52:59
+    ## Trial: 1, mtry: 9 --- 2019-03-09 21:53:09
+    ## Trial: 2, mtry: 3 --- 2019-03-09 21:53:19
+    ## Trial: 2, mtry: 4 --- 2019-03-09 21:53:24
+    ## Trial: 2, mtry: 5 --- 2019-03-09 21:53:29
+    ## Trial: 2, mtry: 6 --- 2019-03-09 21:53:36
+    ## Trial: 2, mtry: 7 --- 2019-03-09 21:53:44
+    ## Trial: 2, mtry: 8 --- 2019-03-09 21:53:52
+    ## Trial: 2, mtry: 9 --- 2019-03-09 21:54:01
+    ## Trial: 3, mtry: 3 --- 2019-03-09 21:54:12
+    ## Trial: 3, mtry: 4 --- 2019-03-09 21:54:17
+    ## Trial: 3, mtry: 5 --- 2019-03-09 21:54:22
+    ## Trial: 3, mtry: 6 --- 2019-03-09 21:54:29
+    ## Trial: 3, mtry: 7 --- 2019-03-09 21:54:36
+    ## Trial: 3, mtry: 8 --- 2019-03-09 21:54:45
+    ## Trial: 3, mtry: 9 --- 2019-03-09 21:54:54
+    ## Trial: 4, mtry: 3 --- 2019-03-09 21:55:05
+    ## Trial: 4, mtry: 4 --- 2019-03-09 21:55:09
+    ## Trial: 4, mtry: 5 --- 2019-03-09 21:55:15
+    ## Trial: 4, mtry: 6 --- 2019-03-09 21:55:21
+    ## Trial: 4, mtry: 7 --- 2019-03-09 21:55:29
+    ## Trial: 4, mtry: 8 --- 2019-03-09 21:55:37
+    ## Trial: 4, mtry: 9 --- 2019-03-09 21:55:47
+    ## Trial: 5, mtry: 3 --- 2019-03-09 21:55:57
+    ## Trial: 5, mtry: 4 --- 2019-03-09 21:56:02
+    ## Trial: 5, mtry: 5 --- 2019-03-09 21:56:08
+    ## Trial: 5, mtry: 6 --- 2019-03-09 21:56:14
+    ## Trial: 5, mtry: 7 --- 2019-03-09 21:56:22
+    ## Trial: 5, mtry: 8 --- 2019-03-09 21:56:30
+    ## Trial: 5, mtry: 9 --- 2019-03-09 21:56:40
+    ## Trial: 6, mtry: 3 --- 2019-03-09 21:56:50
+    ## Trial: 6, mtry: 4 --- 2019-03-09 21:56:55
+    ## Trial: 6, mtry: 5 --- 2019-03-09 21:57:00
+    ## Trial: 6, mtry: 6 --- 2019-03-09 21:57:07
+    ## Trial: 6, mtry: 7 --- 2019-03-09 21:57:14
+    ## Trial: 6, mtry: 8 --- 2019-03-09 21:57:23
+    ## Trial: 6, mtry: 9 --- 2019-03-09 21:57:32
+    ## Trial: 7, mtry: 3 --- 2019-03-09 21:57:42
+    ## Trial: 7, mtry: 4 --- 2019-03-09 21:57:47
+    ## Trial: 7, mtry: 5 --- 2019-03-09 21:57:53
+    ## Trial: 7, mtry: 6 --- 2019-03-09 21:58:00
+    ## Trial: 7, mtry: 7 --- 2019-03-09 21:58:07
+    ## Trial: 7, mtry: 8 --- 2019-03-09 21:58:16
+    ## Trial: 7, mtry: 9 --- 2019-03-09 21:58:25
+    ## Trial: 8, mtry: 3 --- 2019-03-09 21:58:36
+    ## Trial: 8, mtry: 4 --- 2019-03-09 21:58:40
+    ## Trial: 8, mtry: 5 --- 2019-03-09 21:58:46
+    ## Trial: 8, mtry: 6 --- 2019-03-09 21:58:53
+    ## Trial: 8, mtry: 7 --- 2019-03-09 21:59:00
+    ## Trial: 8, mtry: 8 --- 2019-03-09 21:59:09
+    ## Trial: 8, mtry: 9 --- 2019-03-09 21:59:18
+    ## Trial: 9, mtry: 3 --- 2019-03-09 21:59:29
+    ## Trial: 9, mtry: 4 --- 2019-03-09 21:59:33
+    ## Trial: 9, mtry: 5 --- 2019-03-09 21:59:39
+    ## Trial: 9, mtry: 6 --- 2019-03-09 21:59:45
+    ## Trial: 9, mtry: 7 --- 2019-03-09 21:59:53
+    ## Trial: 9, mtry: 8 --- 2019-03-09 22:00:01
+    ## Trial: 9, mtry: 9 --- 2019-03-09 22:00:11
+    ## Trial: 10, mtry: 3 --- 2019-03-09 22:00:21
+    ## Trial: 10, mtry: 4 --- 2019-03-09 22:00:26
+    ## Trial: 10, mtry: 5 --- 2019-03-09 22:00:32
+    ## Trial: 10, mtry: 6 --- 2019-03-09 22:00:38
+    ## Trial: 10, mtry: 7 --- 2019-03-09 22:00:46
+    ## Trial: 10, mtry: 8 --- 2019-03-09 22:00:54
+    ## Trial: 10, mtry: 9 --- 2019-03-09 22:01:04
+    ## Trial: 11, mtry: 3 --- 2019-03-09 22:01:14
+    ## Trial: 11, mtry: 4 --- 2019-03-09 22:01:19
+    ## Trial: 11, mtry: 5 --- 2019-03-09 22:01:24
+    ## Trial: 11, mtry: 6 --- 2019-03-09 22:01:31
+    ## Trial: 11, mtry: 7 --- 2019-03-09 22:01:39
+    ## Trial: 11, mtry: 8 --- 2019-03-09 22:01:47
+    ## Trial: 11, mtry: 9 --- 2019-03-09 22:01:57
+    ## Trial: 12, mtry: 3 --- 2019-03-09 22:02:07
+    ## Trial: 12, mtry: 4 --- 2019-03-09 22:02:12
+    ## Trial: 12, mtry: 5 --- 2019-03-09 22:02:17
+    ## Trial: 12, mtry: 6 --- 2019-03-09 22:02:24
+    ## Trial: 12, mtry: 7 --- 2019-03-09 22:02:32
+    ## Trial: 12, mtry: 8 --- 2019-03-09 22:02:40
+    ## Trial: 12, mtry: 9 --- 2019-03-09 22:02:50
+    ## Trial: 13, mtry: 3 --- 2019-03-09 22:03:00
+    ## Trial: 13, mtry: 4 --- 2019-03-09 22:03:05
+    ## Trial: 13, mtry: 5 --- 2019-03-09 22:03:10
+    ## Trial: 13, mtry: 6 --- 2019-03-09 22:03:17
+    ## Trial: 13, mtry: 7 --- 2019-03-09 22:03:24
+    ## Trial: 13, mtry: 8 --- 2019-03-09 22:03:33
+    ## Trial: 13, mtry: 9 --- 2019-03-09 22:03:43
+    ## Trial: 14, mtry: 3 --- 2019-03-09 22:03:53
+    ## Trial: 14, mtry: 4 --- 2019-03-09 22:03:58
+    ## Trial: 14, mtry: 5 --- 2019-03-09 22:04:04
+    ## Trial: 14, mtry: 6 --- 2019-03-09 22:04:11
+    ## Trial: 14, mtry: 7 --- 2019-03-09 22:04:18
+    ## Trial: 14, mtry: 8 --- 2019-03-09 22:04:27
+    ## Trial: 14, mtry: 9 --- 2019-03-09 22:04:37
+    ## Trial: 15, mtry: 3 --- 2019-03-09 22:04:47
+    ## Trial: 15, mtry: 4 --- 2019-03-09 22:04:52
+    ## Trial: 15, mtry: 5 --- 2019-03-09 22:04:58
+    ## Trial: 15, mtry: 6 --- 2019-03-09 22:05:04
+    ## Trial: 15, mtry: 7 --- 2019-03-09 22:05:12
+    ## Trial: 15, mtry: 8 --- 2019-03-09 22:05:20
+    ## Trial: 15, mtry: 9 --- 2019-03-09 22:05:30
+    ## Trial: 16, mtry: 3 --- 2019-03-09 22:05:40
+    ## Trial: 16, mtry: 4 --- 2019-03-09 22:05:44
+    ## Trial: 16, mtry: 5 --- 2019-03-09 22:05:50
+    ## Trial: 16, mtry: 6 --- 2019-03-09 22:05:57
+    ## Trial: 16, mtry: 7 --- 2019-03-09 22:06:04
+    ## Trial: 16, mtry: 8 --- 2019-03-09 22:06:13
+    ## Trial: 16, mtry: 9 --- 2019-03-09 22:06:22
+    ## Trial: 17, mtry: 3 --- 2019-03-09 22:06:32
+    ## Trial: 17, mtry: 4 --- 2019-03-09 22:06:37
+    ## Trial: 17, mtry: 5 --- 2019-03-09 22:06:42
+    ## Trial: 17, mtry: 6 --- 2019-03-09 22:06:49
+    ## Trial: 17, mtry: 7 --- 2019-03-09 22:06:56
+    ## Trial: 17, mtry: 8 --- 2019-03-09 22:07:05
+    ## Trial: 17, mtry: 9 --- 2019-03-09 22:07:14
+    ## Trial: 18, mtry: 3 --- 2019-03-09 22:07:25
+    ## Trial: 18, mtry: 4 --- 2019-03-09 22:07:29
+    ## Trial: 18, mtry: 5 --- 2019-03-09 22:07:35
+    ## Trial: 18, mtry: 6 --- 2019-03-09 22:07:42
+    ## Trial: 18, mtry: 7 --- 2019-03-09 22:07:49
+    ## Trial: 18, mtry: 8 --- 2019-03-09 22:07:57
+    ## Trial: 18, mtry: 9 --- 2019-03-09 22:08:07
+    ## Trial: 19, mtry: 3 --- 2019-03-09 22:08:17
+    ## Trial: 19, mtry: 4 --- 2019-03-09 22:08:22
+    ## Trial: 19, mtry: 5 --- 2019-03-09 22:08:28
+    ## Trial: 19, mtry: 6 --- 2019-03-09 22:08:34
+    ## Trial: 19, mtry: 7 --- 2019-03-09 22:08:42
+    ## Trial: 19, mtry: 8 --- 2019-03-09 22:08:51
+    ## Trial: 19, mtry: 9 --- 2019-03-09 22:09:00
+    ## Trial: 20, mtry: 3 --- 2019-03-09 22:09:10
+    ## Trial: 20, mtry: 4 --- 2019-03-09 22:09:15
+    ## Trial: 20, mtry: 5 --- 2019-03-09 22:09:21
+    ## Trial: 20, mtry: 6 --- 2019-03-09 22:09:28
+    ## Trial: 20, mtry: 7 --- 2019-03-09 22:09:35
+    ## Trial: 20, mtry: 8 --- 2019-03-09 22:09:44
+    ## Trial: 20, mtry: 9 --- 2019-03-09 22:09:53
+
+``` r
 rf_plot <- data.frame(output)
 rf_plot <- rf_plot %>%
   mutate(ntree = seq(25,500,25))
@@ -63,7 +205,7 @@ p + geom_line() +
   scale_color_brewer(palette="Paired")
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-4-1.png)
+![](homework-4_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 Problem 2
 ---------
@@ -93,7 +235,7 @@ reg_tree <- rpart(Sales ~ ., training)
 plot(as.party(reg_tree))
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](homework-4_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
 ``` r
 reg_tree
@@ -156,7 +298,7 @@ cv_reg_tree <- train(Sales ~ .,
 plot(cv_reg_tree)
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](homework-4_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 ``` r
 cv_reg_tree
@@ -184,7 +326,7 @@ cv_reg_tree
 plot(as.party(cv_reg_tree$finalModel))
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-9-2.png) Estimated Test MSE:
+![](homework-4_files/figure-markdown_github/unnamed-chunk-8-2.png) Estimated Test MSE:
 
 ``` r
 test_preds <- predict(cv_reg_tree, newdata = testing)
@@ -229,7 +371,7 @@ bag_car
 varImpPlot(bag_car)  
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-11-1.png) By reading the output of `varImpPlot`, we can tell that the most important predictors are `ShelveLoc` and `Price`.
+![](homework-4_files/figure-markdown_github/unnamed-chunk-10-1.png) By reading the output of `varImpPlot`, we can tell that the most important predictors are `ShelveLoc` and `Price`.
 
 Estimated Test MSE:
 
@@ -287,7 +429,7 @@ rf_car_cv
 plot(rf_car_cv)
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-13-1.png) Estimated Test MSE:
+![](homework-4_files/figure-markdown_github/unnamed-chunk-12-1.png) Estimated Test MSE:
 
 ``` r
 test_preds <- predict(rf_car_cv, newdata = testing)
@@ -305,7 +447,7 @@ By comparing the RMSE of bagging and random forest applied on testing dataset, w
 varImpPlot(rf_car_cv$finalModel)
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-15-1.png) According to the variable importance plot of the optimal random forest shown above, we can tell that `ShelveLocGood` and `Price` are the most importance predictors.
+![](homework-4_files/figure-markdown_github/unnamed-chunk-14-1.png) According to the variable importance plot of the optimal random forest shown above, we can tell that `ShelveLocGood` and `Price` are the most importance predictors.
 
 ``` r
 rf_car_cv$finalModel
@@ -451,7 +593,7 @@ gbm_car
 plot(gbm_car)
 ```
 
-![](homework-4_files/figure-markdown_github/unnamed-chunk-17-1.png) Estimated Test MSE:
+![](homework-4_files/figure-markdown_github/unnamed-chunk-16-1.png) Estimated Test MSE:
 
 ``` r
 test_preds <- predict(gbm_car, newdata = testing)
